@@ -98,6 +98,7 @@ VisualC/visualtest/testsprite2_sample.parameters
 
 # for Android
 android-project/local.properties
+android-project/.gradle
 
 test/checkkeys
 test/checkkeysthreads
