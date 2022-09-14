@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "SDL.h"
+#include "testutils.h"
 
 #ifndef SDL_JOYSTICK_DISABLED
 
@@ -168,39 +169,6 @@ static SDL_Window *window;
 static SDL_Renderer *screen;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool bind_touchpad = SDL_FALSE;
-
-SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
-{
-    SDL_Surface *temp;
-    SDL_Texture *texture;
-
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-        return NULL;
-    }
-
-    /* Set transparent pixel as the pixel at (0,0) */
-    if (transparent) {
-        if (temp->format->palette) {
-            SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *) temp->pixels);
-        }
-    }
-
-    /* Create textures from the image */
-    texture = SDL_CreateTextureFromSurface(renderer, temp);
-    if (!texture) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(temp);
-        return NULL;
-    }
-    SDL_FreeSurface(temp);
-
-    /* We're ready to roll. :) */
-    return texture;
-}
 
 static int
 StandardizeAxisValue(int nValue)
@@ -392,10 +360,10 @@ WatchJoystick(SDL_Joystick * joystick)
     Uint32 alpha_ticks = 0;
     SDL_JoystickID nJoystickID;
 
-    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
-    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
-    button = LoadTexture(screen, "button.bmp", SDL_TRUE);
-    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
+    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE, NULL, NULL);
+    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE, NULL, NULL);
+    button = LoadTexture(screen, "button.bmp", SDL_TRUE, NULL, NULL);
+    axis = LoadTexture(screen, "axis.bmp", SDL_TRUE, NULL, NULL);
     SDL_RaiseWindow(window);
 
     /* scale for platforms that don't give you the window size you asked for. */
@@ -590,6 +558,8 @@ WatchJoystick(SDL_Joystick * joystick)
     }
 
     if (s_bBindingComplete) {
+        SDL_JoystickGUID guid;
+        Uint16 crc;
         char mapping[1024];
         char trimmed_name[128];
         char *spot;
@@ -608,13 +578,28 @@ WatchJoystick(SDL_Joystick * joystick)
         }
 
         /* Initialize mapping with GUID and name */
-        SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), mapping, SDL_arraysize(mapping));
+        guid = SDL_JoystickGetGUID(joystick);
+        SDL_GetJoystickGUIDInfo(guid, NULL, NULL, NULL, &crc);
+        if (crc) {
+            /* Clear the CRC from the GUID for the mapping */
+            guid.data[2] = 0;
+            guid.data[3] = 0;
+        }
+        SDL_JoystickGetGUIDString(guid, mapping, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         SDL_strlcat(mapping, trimmed_name, SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
         SDL_strlcat(mapping, "platform:", SDL_arraysize(mapping));
         SDL_strlcat(mapping, SDL_GetPlatform(), SDL_arraysize(mapping));
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
+        if (crc) {
+            char crc_string[5];
+
+            SDL_strlcat(mapping, "crc:", SDL_arraysize(mapping));
+            SDL_snprintf(crc_string, sizeof(crc_string), "%.4x", crc);
+            SDL_strlcat(mapping, crc_string, SDL_arraysize(mapping));
+            SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
+        }
 
         for (iIndex = 0; iIndex < SDL_arraysize(s_arrBindings); ++iIndex) {
             SDL_GameControllerExtendedBind *pBinding = &s_arrBindings[iIndex];
@@ -726,6 +711,7 @@ main(int argc, char *argv[])
 {
     const char *name;
     int i;
+    int joystick_index;
     SDL_Joystick *joystick;
 
     SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
@@ -802,9 +788,16 @@ main(int argc, char *argv[])
         }
     }
 
-    joystick = SDL_JoystickOpen(0);
+    joystick_index = 0;
+    for (i = 1; i < argc; ++i) {
+        if (argv[i] && *argv[i] != '-') {
+            joystick_index = SDL_atoi(argv[i]);
+            break;
+        }
+    }
+    joystick = SDL_JoystickOpen(joystick_index);
     if (joystick == NULL) {
-        SDL_Log("Couldn't open joystick 0: %s\n", SDL_GetError());
+        SDL_Log("Couldn't open joystick %d: %s\n", joystick_index, SDL_GetError());
     } else {
         WatchJoystick(joystick);
         SDL_JoystickClose(joystick);

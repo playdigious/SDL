@@ -169,6 +169,7 @@ typedef struct GLES2_RenderData
 #endif
 
     GLES2_DrawStateCache drawstate;
+    GLES2_ShaderIncludeType texcoord_precision_hint;
 } GLES2_RenderData;
 
 #define GLES2_MAX_CACHED_PROGRAMS 8
@@ -494,16 +495,28 @@ GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLenum shader_t
 {
     GLuint id;
     GLint compileSuccessful = GL_FALSE;
-    const char *shader_src = (char *)GLES2_GetShader(type);
+    int num_src = 0;
+    const GLchar *shader_src_list[4] = { 0 };
+    const GLchar *shader_body = (const GLchar *)GLES2_GetShader(type);
 
-    if (!shader_src) {
-        SDL_SetError("No shader src");
+    if (!shader_body) {
+        SDL_SetError("No shader body src");
         return 0;
     }
 
+    if (shader_type == GL_FRAGMENT_SHADER) {
+        if (data->texcoord_precision_hint != GLES2_SHADER_FRAGMENT_INCLUDE_UNDEF_PRECISION) {
+            shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(GLES2_SHADER_FRAGMENT_INCLUDE_DEFAULT);
+        }
+        shader_src_list[num_src++] = (const GLchar*)GLES2_GetShaderInclude(data->texcoord_precision_hint);
+    }
+    shader_src_list[num_src++] = shader_body;
+
+    SDL_assert(num_src < SDL_arraysize(shader_src_list));
+
     /* Compile */
     id = data->glCreateShader(shader_type);
-    data->glShaderSource(id, 1, &shader_src, NULL);
+    data->glShaderSource(id, num_src, shader_src_list, NULL);
     data->glCompileShader(id);
     data->glGetShaderiv(id, GL_COMPILE_STATUS, &compileSuccessful);
 
@@ -1155,8 +1168,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &data->drawstate.viewport;
-                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     data->drawstate.viewport_dirty = SDL_TRUE;
                 }
                 break;
@@ -1169,8 +1182,8 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
 
-                if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
+                    SDL_copyp(&data->drawstate.cliprect, rect);
                     data->drawstate.cliprect_dirty = SDL_TRUE;
                 }
                 break;
@@ -2093,6 +2106,8 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
         (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
         data->debug_enabled = SDL_TRUE;
     }
+
+    data->texcoord_precision_hint = GLES2_GetTexCoordPrecisionEnumFromHint();
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
