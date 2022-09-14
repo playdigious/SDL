@@ -7510,7 +7510,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1400;
 				TargetAttributes = {
 					E2D187CE28A5673500D2B4F1 = {
 						CreatedOnToolsVersion = 12.4;
@@ -9552,7 +9552,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				STRIP_STYLE = "non-global";
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
@@ -9638,7 +9638,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				STRIP_INSTALLED_PRODUCT = NO;
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
 		};
@@ -9727,6 +9727,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
 		};
@@ -9738,6 +9739,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
