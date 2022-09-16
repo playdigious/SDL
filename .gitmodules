@@ -1,0 +1,3 @@
+[submodule "submodules/metalangle"]
+	path = submodules/metalangle
+	url = git@github.com:kakashidinho/metalangle.git
