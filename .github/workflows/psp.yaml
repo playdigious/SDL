@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     container: pspdev/pspdev:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup dependencies
       run: |
         apk update 
@@ -16,6 +16,7 @@ jobs:
       run: |
         cmake -S . -B build \
           -DCMAKE_TOOLCHAIN_FILE=$PSPDEV/psp/share/pspdev.cmake \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DSDL_INSTALL_TESTS=ON \
           -DCMAKE_BUILD_TYPE=Release \
@@ -38,12 +39,12 @@ jobs:
     - name: Verify sdl2-config
       run: |
         export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PATH=${{ env.SDL2_DIR }}/bin:$PATH
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         cmake/test/test_sdlconfig.sh
     - name: Verify sdl2.pc
       run: |
         export CC=psp-gcc
+        export LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
-        export EXTRA_LDFLAGS="-L$PSPDEV/lib -L$PSPDEV/psp/lib -L$PSPDEV/psp/sdk/lib"
         cmake/test/test_pkgconfig.sh

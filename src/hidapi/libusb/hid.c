@@ -29,6 +29,7 @@
 
 #include "../../SDL_internal.h"
 #include "../../thread/SDL_systhread.h"
+#include "SDL_hints.h"
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 
@@ -321,7 +322,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 				/* Can't ever happen since size_code is & 0x3 */
 				data_len = 0;
 				break;
-			};
+			}
 			key_size = 1;
 		}
 
@@ -687,6 +688,8 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2c22, /* Qanba */
+		0x2dc8, /* 8BitDo */
+        0x9886, /* ASTRO Gaming */
 	};
 
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
@@ -708,15 +711,20 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	static const int XB1_IFACE_SUBCLASS = 71;
 	static const int XB1_IFACE_PROTOCOL = 208;
 	static const int SUPPORTED_VENDORS[] = {
+        0x03f0, /* HP */
+		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x0738, /* Mad Catz */
+		0x0b05, /* ASUS */
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
+        0x10f5, /* Turtle Beach */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
 		0x2dc8, /* 8BitDo */
 		0x2e24, /* Hyperkin */
+        0x3537, /* GameSir */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
@@ -761,6 +769,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 	struct hid_device_info *root = NULL; /* return object */
 	struct hid_device_info *cur_dev = NULL;
+	const char *hint = SDL_GetHint(SDL_HINT_HIDAPI_IGNORE_DEVICES);
 
 	if(hid_init() < 0)
 		return NULL;
@@ -778,10 +787,21 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		unsigned short dev_vid = desc.idVendor;
 		unsigned short dev_pid = desc.idProduct;
 
+		/* See if there are any devices we should skip in enumeration */
+		if (hint) {
+			char vendor_match[16], product_match[16];
+			SDL_snprintf(vendor_match, sizeof(vendor_match), "0x%.4x/0x0000", dev_vid);
+			SDL_snprintf(product_match, sizeof(product_match), "0x%.4x/0x%.4x", dev_vid, dev_pid);
+			if (SDL_strcasestr(hint, vendor_match) || SDL_strcasestr(hint, product_match)) {
+				continue;
+			}
+		}
+
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);
 		if (conf_desc) {
+
 			for (j = 0; j < conf_desc->bNumInterfaces; j++) {
 				const struct libusb_interface *intf = &conf_desc->interface[j];
 				for (k = 0; k < intf->num_altsetting; k++) {
@@ -1051,6 +1071,7 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 
 static int SDLCALL read_thread(void *param)
 {
+	int res;
 	hid_device *dev = (hid_device *)param;
 	uint8_t *buf;
 	const size_t length = dev->input_ep_max_packet_size;
@@ -1069,14 +1090,18 @@ static int SDLCALL read_thread(void *param)
 
 	/* Make the first submission. Further submissions are made
 	   from inside read_callback() */
-	libusb_submit_transfer(dev->transfer);
+	res = libusb_submit_transfer(dev->transfer);
+	if(res < 0) {
+                LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
+                dev->shutdown_thread = 1;
+                dev->transfer_loop_finished = 1;
+	}
 
 	/* Notify the main thread that the read thread is up and running. */
 	SDL_WaitThreadBarrier(&dev->barrier);
 
 	/* Handle all the events. */
 	while (!dev->shutdown_thread) {
-		int res;
 		res = libusb_handle_events(usb_context);
 		if (res < 0) {
 			/* There was an error. */
@@ -1123,8 +1148,7 @@ static int SDLCALL read_thread(void *param)
 static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, struct libusb_config_descriptor *conf_desc)
 {
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
-	    (idVendor == 0x0f0d && idProduct == 0x00dc) /* HORIPAD */ ||
-	    (idVendor == 0x0f0d && idProduct == 0x011e) /* Hori Fighting Stick α */) {
+	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
 
 		/* The HORIPAD FPS for Nintendo Switch requires this to enable input reports.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -889,3 +889,12 @@
 #define SDL_SetPrimarySelectionText SDL_SetPrimarySelectionText_REAL
 #define SDL_GetPrimarySelectionText SDL_GetPrimarySelectionText_REAL
 #define SDL_HasPrimarySelectionText SDL_HasPrimarySelectionText_REAL
+#define SDL_GameControllerGetSensorDataWithTimestamp SDL_GameControllerGetSensorDataWithTimestamp_REAL
+#define SDL_SensorGetDataWithTimestamp SDL_SensorGetDataWithTimestamp_REAL
+#define SDL_ResetHints SDL_ResetHints_REAL
+#define SDL_strcasestr SDL_strcasestr_REAL
+#define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
+#define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
+#define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
+#define SDL_GDKGetDefaultUser SDL_GDKGetDefaultUser_REAL
+#define SDL_GameControllerGetSteamHandle SDL_GameControllerGetSteamHandle_REAL
