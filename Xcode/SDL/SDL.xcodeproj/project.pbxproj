@@ -7680,7 +7680,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1400;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					E2D187CE28A5673500D2B4F1 = {
 						CreatedOnToolsVersion = 12.4;
@@ -9728,8 +9728,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEPLOYMENT_POSTPROCESSING = YES;
-				DYLIB_COMPATIBILITY_VERSION = 3001.0.0;
-				DYLIB_CURRENT_VERSION = 3001.5.0;
+				DYLIB_COMPATIBILITY_VERSION = 3201.0.0;
+				DYLIB_CURRENT_VERSION = 3201.10.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_ALTIVEC_EXTENSIONS = YES;
@@ -9752,7 +9752,7 @@
 					../../src/hidapi/hidapi,
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9762,7 +9762,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				STRIP_STYLE = "non-global";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Release;
 		};
@@ -9770,7 +9770,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				MARKETING_VERSION = 2.30.5;
+				MARKETING_VERSION = 2.32.10;
 				OTHER_LDFLAGS = "-liconv";
 			};
 			name = Release;
@@ -9813,8 +9813,8 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = 3001.0.0;
-				DYLIB_CURRENT_VERSION = 3001.5.0;
+				DYLIB_COMPATIBILITY_VERSION = 3201.0.0;
+				DYLIB_CURRENT_VERSION = 3201.10.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -9837,7 +9837,7 @@
 					../../src/hidapi/hidapi,
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9848,7 +9848,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				STRIP_INSTALLED_PRODUCT = NO;
-				TVOS_DEPLOYMENT_TARGET = 12.0;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Debug;
 		};
@@ -9856,7 +9856,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				MARKETING_VERSION = 2.30.5;
+				MARKETING_VERSION = 2.32.10;
 				OTHER_LDFLAGS = "-liconv";
 			};
 			name = Debug;
@@ -9937,7 +9937,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
 		};
@@ -9949,7 +9948,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
@@ -10064,8 +10062,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 3001.0.0;
-				DYLIB_CURRENT_VERSION = 3001.5.0;
+				DYLIB_COMPATIBILITY_VERSION = 3201.0.0;
+				DYLIB_CURRENT_VERSION = 3201.10.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -10116,8 +10114,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 3001.0.0;
-				DYLIB_CURRENT_VERSION = 3001.5.0;
+				DYLIB_COMPATIBILITY_VERSION = 3201.0.0;
+				DYLIB_CURRENT_VERSION = 3201.10.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
