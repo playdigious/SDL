@@ -11,6 +11,8 @@ android {
     if (buildAsApplication) {
         namespace="org.libsdl.app"
     }
+    buildToolsVersion '36.1.0'
+    ndkVersion '29.0.14206865'
     compileSdkVersion 36
     defaultConfig {
         minSdkVersion 24
