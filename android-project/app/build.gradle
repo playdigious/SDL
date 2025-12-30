@@ -9,12 +9,12 @@ else {
 
 android {
     if (buildAsApplication) {
-        namespace "org.libsdl.app"
+        namespace="org.libsdl.app"
     }
-    compileSdkVersion 34
+    compileSdkVersion 36
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
@@ -32,7 +32,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     applicationVariants.all { variant ->
@@ -51,10 +51,10 @@ android {
             //    path 'jni/CMakeLists.txt'
             //}
         }
-       
+
     }
     lint {
-        abortOnError false
+        abortOnError=false
     }
 
     if (buildAsLibrary) {
