@@ -59,31 +59,6 @@
 
 @end
 
-@interface SDL_uikitwindow : UIWindow
-
-- (void)layoutSubviews;
-
-@end
-
-@implementation SDL_uikitwindow
-
-- (void)layoutSubviews
-{
-    /* Workaround to fix window orientation issues in iOS 8. */
-    /* As of July 1 2019, I haven't been able to reproduce any orientation
-     * issues with this disabled on iOS 12. The issue this is meant to fix might
-     * only happen on iOS 8, or it might have been fixed another way with other
-     * code... This code prevents split view (iOS 9+) from working on iPads, so
-     * we want to avoid using it if possible. */
-    if (!UIKit_IsSystemVersionAtLeast(9.0)) {
-        self.frame = self.screen.bounds;
-    }
-    [super layoutSubviews];
-}
-
-@end
-
-
 static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -149,13 +124,49 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     return 0;
 }
 
+API_AVAILABLE(ios(13.0))
+static UIWindowScene *GetActiveWindowScene(void)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+
+        // First, try to find an active foreground scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+                    return windowScene;
+                }
+            }
+        }
+
+        // If no active scene, return any foreground scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (windowScene.activationState == UISceneActivationStateForegroundInactive) {
+                    return windowScene;
+                }
+            }
+        }
+
+        // Last resort: return first window scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                return (UIWindowScene *)scene;
+            }
+        }
+    }
+
+    return nil;
+}
+
 int UIKit_CreateWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
         SDL_Window *other;
-        UIWindow *uiwindow;
 #if !TARGET_OS_TV
         const CGSize origsize = data.uiscreen.currentMode.size;
 #endif
@@ -205,11 +216,20 @@ int UIKit_CreateWindow(_THIS, SDL_Window *window)
         }
 #endif /* !TARGET_OS_TV */
 
-        /* ignore the size user requested, and make a fullscreen window */
-        /* !!! FIXME: can we have a smaller view? */
-        uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
+        UIWindow *uiwindow = nil;
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            UIWindowScene *scene = GetActiveWindowScene();
+            if (scene) {
+                uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
 
-        /* put the window on an external display if appropriate. */
+            }
+        }
+        if (!uiwindow) {
+            // ignore the size user requested, and make a fullscreen window
+            uiwindow = [[UIWindow alloc] initWithFrame:data.uiscreen.bounds];
+        }
+
+        // put the window on an external display if appropriate.
         if (data.uiscreen != [UIScreen mainScreen]) {
             [uiwindow setScreen:data.uiscreen];
         }
